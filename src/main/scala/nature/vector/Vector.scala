@@ -7,10 +7,8 @@ object BouncingBall extends App {
 
 class BouncingBall extends PApplet {
 
-  var ballX = 100
-  var ballY = 100
-  var xspeed = 1
-  var yspeed = 3
+  var ballLocation = PVector(100, 100)
+  var velocity = PVector(2, 5)
 
   override def setup() = {
     size(640, 360)
@@ -20,21 +18,28 @@ class BouncingBall extends PApplet {
   override def draw() = {
     background(255)
 
-    ballX = ballX + xspeed
-    ballY = ballY + yspeed
+    ballLocation = ballLocation + velocity
 
-    if((ballX > width) || (ballX < 0)) {
-      xspeed  = xspeed * (-1)
+    println(ballLocation)
+
+    if((ballLocation.x > width) || (ballLocation.x < 0)) {
+      velocity = velocity.copy(x = (-1) * velocity.x)
     }
 
-    if((ballY > height) || (ballY < 0)) {
-      yspeed  = yspeed * (-1)
+    if((ballLocation.y > height) || (ballLocation.y < 0)) {
+      velocity  = velocity.copy(y = (-1) * velocity.y)
     }
 
     stroke(0)
     fill(175)
-    ellipse(ballX, ballY, 16, 16)
+    ellipse(ballLocation.x, ballLocation.y, 16, 16)
 
   }
+}
+
+case class PVector(x: Float, y: Float) {
+  def +(v: PVector) = PVector(x + v.x, y + v.y)
+
+  override def toString = s"vx = $x ; vy = $y"
 }
 
