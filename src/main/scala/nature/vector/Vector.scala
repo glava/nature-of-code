@@ -1,20 +1,30 @@
 import processing.core._
 
-case class PVector(x: Float, y: Float) {
+case class PVector(x: Float, y: Float, limit: Option[Float] = None) {
 
-  def +(v: PVector) = PVector(x + v.x, y + v.y)
+  def +(v: PVector) = withLimit(PVector(x + v.x, y + v.y, limit))
 
-  def -(v: PVector) = PVector(x - v.x, y - v.y)
+  def -(v: PVector) = withLimit(PVector(x - v.x, y - v.y, limit))
 
-  def *(n: Float) = PVector(x * n, y * n)
+  def *(n: Float) = withLimit(PVector(x * n, y * n, limit))
 
-  def /(n: Float) = PVector(x / n, y / n)
+  def /(n: Float) = withLimit(PVector(x / n, y / n, limit))
 
   def mag = Math.sqrt(x * x + y * y).toFloat
 
   def normalize  = if (mag > 0) this / mag else this
 
+  def withLimit(v: PVector) = limit.fold(v)(l => if (l > v.mag) v else this)
+
   override def toString = s"vx = $x ; vy = $y"
+}
+
+object PVector {
+
+  def randomNormCoordinate = ((Math.random() * 2) - 1).toFloat
+
+  def randomNorm2D: PVector = PVector(randomNormCoordinate, randomNormCoordinate)
+
 }
 
 object ZeroVector extends PVector(0, 0)
@@ -72,9 +82,9 @@ class BouncingBall extends PApplet {
   }
 }
 
-case class Mover(location: PVector, velocity: PVector, applet: PApplet) {
+case class Ball(location: PVector, velocity: PVector, applet: PApplet) {
 
-  def move = Mover(location + velocity, velocity, applet)
+  def move = Ball(location + velocity, velocity + PVector.randomNorm2D, applet)
 
   def display() = {
     applet.stroke(0)
@@ -98,12 +108,12 @@ case class Mover(location: PVector, velocity: PVector, applet: PApplet) {
   }
 }
 
-class MoverBouncer extends PApplet {
+class BallThroughWalls extends PApplet {
 
-  var mover = Mover(
-    PVector(random(width),random(height)) ,
-    PVector(random(-2,2),random(-2,2)),
-    this
+  var mover = Ball(
+    location =  PVector(random(width),random(height)) ,
+    velocity = PVector(random(-2,2),random(-2,2), Some(10)),
+    applet  = this
   )
 
   override def setup() = {
@@ -118,8 +128,8 @@ class MoverBouncer extends PApplet {
   }
 }
 
-object MoverBouncer extends App {
-  PRunner.run(new MoverBouncer, "Move bouncer")
+object BallThroughWalls extends App {
+  PRunner.run(new BallThroughWalls, "Ball goes through walls")
 }
 
 object BouncingBall extends App {
